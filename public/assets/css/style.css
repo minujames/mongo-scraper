@@ -40,9 +40,14 @@
   background-color: red !important;
 }
 
-.save-article{
+.save-article, .remove-saved, .add-note{
   background-color: #686868;
   color: white;
+  margin : 0 5px;
+}
+
+.remove-saved{
+  background-color:  #b30000;
 }
 
 .title-link{

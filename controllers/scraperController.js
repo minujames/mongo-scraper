@@ -33,7 +33,6 @@ router.get("/saved", function(req, res){
 
 router.get("/scrape", function(req, res){
   scrapeArticles(function(articles){
-    console.log(articles.length);
 
     var articlesInserted = [];
     var index = 0;
@@ -60,9 +59,8 @@ router.get("/scrape", function(req, res){
   });
 });
 
-router.put("/save/:id", function(req, res){
-  console.log("save route");
-  db.Article.findOneAndUpdate({"_id": req.params.id}, { $set: { saved: true }}, { new: true })
+router.put("/save/:id/:saveStatus", function(req, res){
+  db.Article.findOneAndUpdate({"_id": req.params.id}, { $set: { saved: req.params.saveStatus }}, { new: true })
   .then(function(dbArticle){
     console.log(dbArticle);
     res.json(dbArticle);
@@ -72,6 +70,49 @@ router.put("/save/:id", function(req, res){
   });
 
 });
+
+router.get("/article/:id", function(req, res){
+  console.log("notes get");
+  db.Article
+  .findById(req.params.id)
+  .populate("notes")
+  .then(function(article){
+    res.json(article);
+  })
+  .catch(function(error){
+    res.json(error);
+  });
+});
+
+router.post("/article/:id", function(req, res){
+  db.Note
+  .create(req.body)
+  .then(function(note){
+    return db.Article.findOneAndUpdate({"_id": req.params.id}, { $push: { notes: note._id }}, { new: true });
+  })
+  .then(function(article){
+    res.json(article);
+  })
+  .catch(function(error){
+    res.json(error);
+  });
+});
+
+router.delete("/note/:noteId/:articleId", function(req, res){
+
+  db.Note
+  .findByIdAndRemove(req.params.noteId)
+  .then(function(note){
+    return db.Article.findOneAndUpdate({"_id": req.params.articleId}, 
+      { $pull: { notes: req.params.noteId }}, { new: true });
+  })
+  .then(function(article){
+    res.json(article);
+  })
+  .catch(function(error){
+    res.json(error);
+  });
+})
 
 function scrapeArticles(callBack){
   request.get("https://www.nytimes.com/", function(error, response, html){
