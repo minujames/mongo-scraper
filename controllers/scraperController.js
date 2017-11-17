@@ -10,7 +10,7 @@ var db = require("../models");
 
 router.get("/", function(req, res){
   db.Article
-  .find({})
+  .find({saved: false})
   .then(function(articles){
     res.render("articles", {articles: articles, saved: false});
   })
@@ -22,6 +22,7 @@ router.get("/", function(req, res){
 router.get("/saved", function(req, res){
   db.Article
   .find({saved: true})
+  .sort({_id: -1})
   .then(function(articles){
     res.render("articles", {articles: articles, saved: true});
   })
@@ -59,6 +60,19 @@ router.get("/scrape", function(req, res){
   });
 });
 
+router.put("/save/:id", function(req, res){
+  console.log("save route");
+  db.Article.findOneAndUpdate({"_id": req.params.id}, { $set: { saved: true }}, { new: true })
+  .then(function(dbArticle){
+    console.log(dbArticle);
+    res.json(dbArticle);
+  })
+  .catch(function(error){
+    res.json(error);
+  });
+
+});
+
 function scrapeArticles(callBack){
   request.get("https://www.nytimes.com/", function(error, response, html){
     var $ = cheerio.load(html);
@@ -80,48 +94,5 @@ function scrapeArticles(callBack){
     callBack(articles);
   });
 }
-
-// router.get("/scrape", function(req, res){
-//   var index = 0;
-//   request.get("https://www.nytimes.com/", function(error, response, html){
-//     var $ = cheerio.load(html);
-//     $("article.theme-summary").each(function(i, element) {
-
-//       var link = $(element).children("h2.story-heading").children("a").attr("href");;
-//       var title = $(element).children("h2.story-heading").children("a").text();
-//       var summary = $(element).children("p.summary").text();
-
-//         if(link && title && summary){
-
-//           db.Article.findOne({link: link})
-//           .then(function(dbArticle){
-//             if(dbArticle === null){
-//               var summaryTrimmed = summary.replace(/(\r\n|\n|\r)/g,"").trim();
-//               var titleTrimmed = title.replace(/(\r\n|\n|\r)/g,"").trim();
-//               var article = {
-//                 title: titleTrimmed,
-//                 link: link,
-//                 summary: summary.replace(/(\r\n|\n|\r)/g,"").trim()
-//               }
-//               return db.Article.create(article);
-//             }
-//             else{
-//               return 0;
-//             }
-//           })
-//           .then(function(articleCreated){
-//             if(articleCreated){
-//               console.log(articleCreated);
-//             }
-//           })
-//           .catch(function(error){
-//             console.log(error);
-//           });
-//         }
-//       });
-//   });
-//   console.log("articles inserted ", index);
-//   res.json("scraped");
-// });
 
 module.exports = router;
