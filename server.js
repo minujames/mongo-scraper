@@ -6,7 +6,7 @@ var expressHandleBars = require("express-handlebars");
 
 var scraperRoutes = require("./controllers/scraperController.js");
 
-var PORT = 3000;
+var PORT = process.env.PORT || 8080;
 
 // Initialize Express
 var app = express();
@@ -25,7 +25,8 @@ app.set("view engine", "handlebars");
 // Set mongoose to leverage built in JavaScript ES6 Promises
 // Connect to the Mongo DB
 mongoose.Promise = Promise;
-mongoose.connect("mongodb://localhost/mongo-scraper", {
+var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/mongo-scraper";
+mongoose.connect(MONGODB_URI, {
   useMongoClient: true
 });
 
