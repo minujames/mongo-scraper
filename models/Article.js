@@ -7,7 +7,6 @@ var ArticleSchema = new Schema({
   title: {
     type: String,
     required: true,
-    unique: true
   },
   // `link` is required and of type String
   link: {
@@ -19,14 +18,11 @@ var ArticleSchema = new Schema({
     type: String,
     required: true
   },
-  // date: {
-  //   type: Date,
-  //   required: false
-  // },
-  // byline:{
-  //   type: String,
-  //   required: false
-  // },
+  saved: {
+    type: Boolean,
+    required: true,
+    default: false
+  },
   notes: [{
     type: Schema.Types.ObjectId,
     ref: "Note"
